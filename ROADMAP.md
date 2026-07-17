@@ -129,14 +129,21 @@ Convención: mutaciones que afectan varias secciones de `credits#show` (registra
 
 ### Por construir
 
-- [ ] Migraciones: `credit_types`, `credits`, `insurance_policies`, `uvr_values`, `payments`
-- [ ] Seeds de `CreditType` con los tipos comunes en Colombia
-- [ ] Modelos + validaciones + specs (RSpec + FactoryBot)
+- [x] Migraciones: `credit_types`, `credits`, `insurance_policies`, `uvr_values`, `payments`
+- [x] Seeds de `CreditType` con los tipos comunes en Colombia (Vivienda VIS/No VIS, Vehículo, Libre inversión, Educativo, Consumo, Microcrédito)
+- [x] Modelos + validaciones + specs (RSpec + FactoryBot) — 28 ejemplos, todos en verde
 - [ ] Servicio `Credits::AmortizationSchedule` (cálculo de cuota sistema francés + proyección)
 - [ ] Vista `credits#index`
 - [ ] Vista `credits#show` con plan de amortización + histórico de pagos
 - [ ] Formulario `credits#new`/`edit` (con Stimulus para cuota estimada en vivo)
 - [ ] Formulario `payments#new` inline (Turbo Frame) + actualización vía Turbo Stream
+
+### Notas de implementación de los modelos
+
+- Enums en `Credit`: `currency` (cop/uvr), `interest_rate_type` (fixed/variable), `variable_rate_index` (none/ibr/uvr, con `prefix: true` para evitar choque con el método `uvr?` que genera el enum `currency`), `amortization_system` (cuota_fija/abono_constante), `collateral_type` (ninguna/hipoteca/prenda), `status` (active/paid_off/defaulted/written_off).
+- Montos en pesos: `decimal, precision: 15, scale: 2`. Tasas y valores UVR: `precision: 8, scale: 4` / `precision: 12, scale: 4`.
+- Validaciones condicionales: `variable_rate_spread` requerido solo si `interest_rate_type: variable`; `uvr_value_at_disbursement` requerido solo si `currency: uvr`.
+- `CreditType` usa `dependent: :restrict_with_error` en `has_many :credits` (no se puede borrar un tipo con créditos asociados); `Credit` usa `dependent: :destroy` en `payments` e `insurance_policies`.
 
 ---
 
