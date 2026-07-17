@@ -29,7 +29,10 @@ Planificador financiero personal enfocado en el contexto colombiano. Primer mód
 - [x] Rails 8.1 + PostgreSQL
 - [x] RSpec instalado, reemplaza Minitest
 - [x] FactoryBot instalado e integrado en `rails_helper.rb`
-- [ ] Autenticación (generador de auth de Rails 8: `bin/rails generate authentication`)
+- [x] Autenticación (generador de auth de Rails 8: `User`, `Session`, login/logout/reset de contraseña)
+  - Sin registro público (sign up) por decisión: usuarios se crean por `bin/rails db:seed` (lee `ADMIN_EMAIL`/`ADMIN_PASSWORD` de ENV) o por consola
+  - Se agregó `validates :email_address, uniqueness: true` en `User` (el generador solo deja el índice único en BD, no la validación de modelo)
+  - Specs de `User` completos (presencia de password, unicidad de email, normalización, cascada de `sessions` al destruir)
 
 ---
 
