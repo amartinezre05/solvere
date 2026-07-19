@@ -133,7 +133,7 @@ Convención: mutaciones que afectan varias secciones de `credits#show` (registra
 - [x] Seeds de `CreditType` con los tipos comunes en Colombia (Vivienda VIS/No VIS, Vehículo, Libre inversión, Educativo, Consumo, Microcrédito)
 - [x] Modelos + validaciones + specs (RSpec + FactoryBot) — 28 ejemplos, todos en verde
 - [x] Servicio `Credits::AmortizationSchedule` (cálculo de cuota sistema francés + alemán, proyección de cuotas restantes) — 11 ejemplos, todos en verde
-- [ ] Vista `credits#index`
+- [x] Vista `credits#index` — tabla con tipo, entidad, saldo actual y próxima cuota (usa `Credits::AmortizationSchedule`); `root` apunta aquí
 - [ ] Vista `credits#show` con plan de amortización + histórico de pagos
 - [ ] Formulario `credits#new`/`edit` (con Stimulus para cuota estimada en vivo)
 - [ ] Formulario `payments#new` inline (Turbo Frame) + actualización vía Turbo Stream

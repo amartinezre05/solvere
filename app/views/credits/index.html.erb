@@ -1,0 +1,46 @@
+<% content_for :title, "Mis créditos" %>
+
+<%= tag.div(flash[:alert], style: "color:red") if flash[:alert] %>
+<%= tag.div(flash[:notice], style: "color:green") if flash[:notice] %>
+
+<header>
+  <span><%= Current.user.email_address %></span>
+  <%= button_to "Cerrar sesión", session_path, method: :delete %>
+</header>
+
+<h1>Mis créditos</h1>
+
+<% if @credits.any? %>
+  <table>
+    <thead>
+      <tr>
+        <th>Tipo</th>
+        <th>Entidad</th>
+        <th>Saldo actual</th>
+        <th>Próxima cuota</th>
+        <th>Estado</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @credits.each do |credit| %>
+        <% schedule = @schedules[credit] %>
+        <% next_installment = schedule.next_installment %>
+        <tr>
+          <td><%= credit.credit_type.name %></td>
+          <td><%= credit.lender_name %></td>
+          <td><%= number_to_currency(schedule.current_balance, unit: "$", separator: ",", delimiter: ".", precision: 0) %></td>
+          <td>
+            <% if next_installment %>
+              <%= next_installment.date.strftime("%d/%m/%Y") %> — <%= number_to_currency(next_installment.payment, unit: "$", separator: ",", delimiter: ".", precision: 0) %>
+            <% else %>
+              Sin cuotas pendientes
+            <% end %>
+          </td>
+          <td><%= credit.status.humanize %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p>Todavía no tienes créditos registrados.</p>
+<% end %>
