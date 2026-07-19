@@ -132,7 +132,7 @@ Convención: mutaciones que afectan varias secciones de `credits#show` (registra
 - [x] Migraciones: `credit_types`, `credits`, `insurance_policies`, `uvr_values`, `payments`
 - [x] Seeds de `CreditType` con los tipos comunes en Colombia (Vivienda VIS/No VIS, Vehículo, Libre inversión, Educativo, Consumo, Microcrédito)
 - [x] Modelos + validaciones + specs (RSpec + FactoryBot) — 28 ejemplos, todos en verde
-- [ ] Servicio `Credits::AmortizationSchedule` (cálculo de cuota sistema francés + proyección)
+- [x] Servicio `Credits::AmortizationSchedule` (cálculo de cuota sistema francés + alemán, proyección de cuotas restantes) — 11 ejemplos, todos en verde
 - [ ] Vista `credits#index`
 - [ ] Vista `credits#show` con plan de amortización + histórico de pagos
 - [ ] Formulario `credits#new`/`edit` (con Stimulus para cuota estimada en vivo)
@@ -144,6 +144,13 @@ Convención: mutaciones que afectan varias secciones de `credits#show` (registra
 - Montos en pesos: `decimal, precision: 15, scale: 2`. Tasas y valores UVR: `precision: 8, scale: 4` / `precision: 12, scale: 4`.
 - Validaciones condicionales: `variable_rate_spread` requerido solo si `interest_rate_type: variable`; `uvr_value_at_disbursement` requerido solo si `currency: uvr`.
 - `CreditType` usa `dependent: :restrict_with_error` en `has_many :credits` (no se puede borrar un tipo con créditos asociados); `Credit` usa `dependent: :destroy` en `payments` e `insurance_policies`.
+
+### Notas de implementación de `Credits::AmortizationSchedule`
+
+- `interest_rate_ea` se interpreta como porcentaje (ej. `18.5` = 18.5% E.A.), consistente con cómo se cotiza en Colombia; la tasa mensual se deriva como `(1 + ea/100)^(1/12) - 1`.
+- El saldo actual y el plazo restante se recalculan siempre desde cero (saldo = `principal_amount - Σ principal_component`; plazo restante = `term_months - # pagos de tipo installment`), nunca se parte de un valor persistido — así refleja abonos a capital y cambios de tasa sin necesidad de sincronización.
+- `grace_period_months` (período de gracia) **aún no se modela** en la proyección — el servicio asume cuotas regulares desde `first_payment_date`. Pendiente si se necesita para créditos educativos.
+- La última cuota de cada proyección absorbe el residuo de redondeo para que el saldo proyectado cierre exactamente en 0.
 
 ---
 
