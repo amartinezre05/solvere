@@ -135,7 +135,7 @@ Convención: mutaciones que afectan varias secciones de `credits#show` (registra
 - [x] Servicio `Credits::AmortizationSchedule` (cálculo de cuota sistema francés + alemán, proyección de cuotas restantes) — 11 ejemplos, todos en verde
 - [x] Vista `credits#index` — tabla con tipo, entidad, saldo actual y próxima cuota (usa `Credits::AmortizationSchedule`); `root` apunta aquí
 - [x] Vista `credits#show` con plan de amortización + histórico de pagos
-- [ ] Formulario `credits#new`/`edit` (con Stimulus para cuota estimada en vivo)
+- [x] Formulario `credits#new`/`edit` (con Stimulus para cuota estimada en vivo)
 - [ ] Formulario `payments#new` inline (Turbo Frame) + actualización vía Turbo Stream
 
 ### Notas de implementación de los modelos
@@ -151,6 +151,12 @@ Convención: mutaciones que afectan varias secciones de `credits#show` (registra
 - El saldo actual y el plazo restante se recalculan siempre desde cero (saldo = `principal_amount - Σ principal_component`; plazo restante = `term_months - # pagos de tipo installment`), nunca se parte de un valor persistido — así refleja abonos a capital y cambios de tasa sin necesidad de sincronización.
 - `grace_period_months` (período de gracia) **aún no se modela** en la proyección — el servicio asume cuotas regulares desde `first_payment_date`. Pendiente si se necesita para créditos educativos.
 - La última cuota de cada proyección absorbe el residuo de redondeo para que el saldo proyectado cierre exactamente en 0.
+- `upcoming_installments` devuelve `[]` (no `nil`) si `amortization_system` viene vacío/inválido — necesario para el endpoint de estimación, que construye un `Credit.new` no persistido y puede no tener el sistema aún seleccionado.
+
+### Notas de implementación del formulario `credits#new`/`edit`
+
+- `CreditsController#estimate` (`GET /credits/estimate`, `layout false`) recibe `principal_amount`/`term_months`/`interest_rate_ea`/`amortization_system` por query string, arma un `Credit.new` no persistido y devuelve la cuota formateada (o `—` si los datos son insuficientes). No requiere que el crédito exista ni pertenezca a nadie — es un cálculo puro.
+- El Stimulus controller `estimated-payment` (`app/javascript/controllers/estimated_payment_controller.js`) hace `fetch` a ese endpoint en cada `input`/`change` de monto/tasa/plazo/sistema y reemplaza el contenido de un `<strong data-estimated-payment-target="output">`. Sin Turbo Frame de por medio; es un fetch directo porque el resultado es un fragmento de texto, no HTML interactivo.
 
 ---
 

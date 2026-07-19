@@ -1,0 +1,15 @@
+<% content_for :title, "Editar crédito" %>
+
+<%= tag.div(flash[:alert], style: "color:red") if flash[:alert] %>
+<%= tag.div(flash[:notice], style: "color:green") if flash[:notice] %>
+
+<header>
+  <span><%= Current.user.email_address %></span>
+  <%= button_to "Cerrar sesión", session_path, method: :delete %>
+</header>
+
+<p><%= link_to "← #{@credit.lender_name}", credit_path(@credit) %></p>
+
+<h1>Editar crédito</h1>
+
+<%= render "form", credit: @credit %>

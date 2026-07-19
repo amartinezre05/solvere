@@ -1,0 +1,125 @@
+<% if credit.errors.any? %>
+  <div style="color:red">
+    <p><%= pluralize(credit.errors.count, "error") %> impidieron guardar este crédito:</p>
+    <ul>
+      <% credit.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<%= form_with model: credit, data: { controller: "estimated-payment", estimated_payment_url_value: estimate_credits_path } do |form| %>
+  <section>
+    <h2>Datos generales</h2>
+
+    <%= form.label :credit_type_id, "Tipo de crédito" %><br>
+    <%= form.collection_select :credit_type_id, CreditType.order(:name), :id, :name, prompt: true %><br><br>
+
+    <%= form.label :lender_name, "Entidad" %><br>
+    <%= form.text_field :lender_name %><br><br>
+
+    <%= form.label :status %><br>
+    <%= form.select :status, Credit.statuses.keys %><br><br>
+
+    <%= form.label :notes %><br>
+    <%= form.text_area :notes %><br><br>
+  </section>
+
+  <section>
+    <h2>Monto y moneda</h2>
+
+    <%= form.label :principal_amount, "Monto del préstamo" %><br>
+    <%= form.number_field :principal_amount, step: "0.01",
+          data: { estimated_payment_target: "amount", action: "input->estimated-payment#update" } %><br><br>
+
+    <%= form.label :currency %><br>
+    <%= form.select :currency, Credit.currencies.keys %><br><br>
+
+    <%= form.label :uvr_value_at_disbursement, "Valor UVR en desembolso (solo si moneda es UVR)" %><br>
+    <%= form.number_field :uvr_value_at_disbursement, step: "0.0001" %><br><br>
+
+    <%= form.label :down_payment, "Cuota inicial" %><br>
+    <%= form.number_field :down_payment, step: "0.01" %><br><br>
+
+    <%= form.label :subsidy_amount, "Subsidio de vivienda" %><br>
+    <%= form.number_field :subsidy_amount, step: "0.01" %><br><br>
+  </section>
+
+  <section>
+    <h2>Plazo y tasa</h2>
+
+    <%= form.label :term_months, "Plazo (meses)" %><br>
+    <%= form.number_field :term_months,
+          data: { estimated_payment_target: "term", action: "input->estimated-payment#update" } %><br><br>
+
+    <%= form.label :interest_rate_type, "Tipo de tasa" %><br>
+    <%= form.select :interest_rate_type, Credit.interest_rate_types.keys %><br><br>
+
+    <%= form.label :interest_rate_ea, "Tasa E.A. (%)" %><br>
+    <%= form.number_field :interest_rate_ea, step: "0.01",
+          data: { estimated_payment_target: "rate", action: "input->estimated-payment#update" } %><br><br>
+
+    <%= form.label :variable_rate_index, "Indexador (solo si la tasa es variable)" %><br>
+    <%= form.select :variable_rate_index, Credit.variable_rate_indices.keys %><br><br>
+
+    <%= form.label :variable_rate_spread, "Puntos adicionales sobre el indexador" %><br>
+    <%= form.number_field :variable_rate_spread, step: "0.01" %><br><br>
+
+    <%= form.label :amortization_system, "Sistema de amortización" %><br>
+    <%= form.select :amortization_system, Credit.amortization_systems.keys, {},
+          data: { estimated_payment_target: "system", action: "change->estimated-payment#update" } %><br><br>
+
+    <p>Cuota estimada: <strong data-estimated-payment-target="output">—</strong></p>
+  </section>
+
+  <section>
+    <h2>Fechas</h2>
+
+    <%= form.label :disbursement_date, "Fecha de desembolso" %><br>
+    <%= form.date_field :disbursement_date %><br><br>
+
+    <%= form.label :first_payment_date, "Fecha de la primera cuota" %><br>
+    <%= form.date_field :first_payment_date %><br><br>
+
+    <%= form.label :payment_day, "Día de pago (1-31)" %><br>
+    <%= form.number_field :payment_day, min: 1, max: 31 %><br><br>
+
+    <%= form.label :grace_period_months, "Período de gracia (meses)" %><br>
+    <%= form.number_field :grace_period_months, min: 0 %><br><br>
+  </section>
+
+  <section>
+    <h2>Garantía</h2>
+
+    <%= form.label :collateral_type, "Tipo de garantía" %><br>
+    <%= form.select :collateral_type, Credit.collateral_types.keys %><br><br>
+
+    <%= form.label :collateral_description, "Descripción de la garantía" %><br>
+    <%= form.text_field :collateral_description %><br><br>
+  </section>
+
+  <section>
+    <h2>Costos asociados</h2>
+
+    <%= form.label :notary_fees, "Gastos notariales" %><br>
+    <%= form.number_field :notary_fees, step: "0.01" %><br><br>
+
+    <%= form.label :registration_fees, "Gastos de registro" %><br>
+    <%= form.number_field :registration_fees, step: "0.01" %><br><br>
+
+    <%= form.label :appraisal_fee, "Avalúo" %><br>
+    <%= form.number_field :appraisal_fee, step: "0.01" %><br><br>
+
+    <%= form.label :origination_fee, "Comisión de apertura" %><br>
+    <%= form.number_field :origination_fee, step: "0.01" %><br><br>
+
+    <%= form.label :management_fee, "Cuota de manejo mensual" %><br>
+    <%= form.number_field :management_fee, step: "0.01" %><br><br>
+
+    <%= form.label :gmf_applicable, "Aplica 4x1000" %>
+    <%= form.check_box :gmf_applicable %><br><br>
+  </section>
+
+  <%= form.submit credit.persisted? ? "Guardar cambios" : "Crear crédito" %>
+<% end %>

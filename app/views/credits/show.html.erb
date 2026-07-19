@@ -12,6 +12,8 @@
 
 <h1><%= @credit.lender_name %> — <%= @credit.credit_type.name %></h1>
 
+<p><%= link_to "Editar", edit_credit_path(@credit) %></p>
+
 <section>
   <h2>Datos generales</h2>
   <dl>

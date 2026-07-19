@@ -1,0 +1,15 @@
+<% content_for :title, "Nuevo crédito" %>
+
+<%= tag.div(flash[:alert], style: "color:red") if flash[:alert] %>
+<%= tag.div(flash[:notice], style: "color:green") if flash[:notice] %>
+
+<header>
+  <span><%= Current.user.email_address %></span>
+  <%= button_to "Cerrar sesión", session_path, method: :delete %>
+</header>
+
+<p><%= link_to "← Mis créditos", credits_path %></p>
+
+<h1>Nuevo crédito</h1>
+
+<%= render "form", credit: @credit %>

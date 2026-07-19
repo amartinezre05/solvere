@@ -26,6 +26,8 @@ module Credits
         french_schedule
       when "abono_constante"
         german_schedule
+      else
+        []
       end
     end
 

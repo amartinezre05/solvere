@@ -105,6 +105,15 @@ RSpec.describe Credits::AmortizationSchedule do
 
       expect(described_class.new(credit).upcoming_installments).to eq([])
     end
+
+    it "returns an empty schedule when amortization_system is blank" do
+      credit = Credit.new(
+        principal_amount: 1_000_000, term_months: 12, interest_rate_ea: 18.5,
+        first_payment_date: Date.current, amortization_system: nil
+      )
+
+      expect(described_class.new(credit).upcoming_installments).to eq([])
+    end
   end
 
   describe "#next_installment" do
