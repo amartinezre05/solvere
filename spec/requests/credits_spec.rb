@@ -50,4 +50,68 @@ RSpec.describe "Credits", type: :request do
       end
     end
   end
+
+  describe "GET /credits/:id" do
+    context "when not authenticated" do
+      it "redirects to the sign in page" do
+        credit = create(:credit)
+
+        get credit_path(credit)
+
+        expect(response).to redirect_to(new_session_path)
+      end
+    end
+
+    context "when authenticated" do
+      let(:user) { create(:user, password: "password") }
+
+      before do
+        post session_path, params: { email_address: user.email_address, password: "password" }
+      end
+
+      it "succeeds for a credit owned by the current user" do
+        credit = create(:credit, user: user)
+
+        get credit_path(credit)
+
+        expect(response).to have_http_status(:ok)
+      end
+
+      it "returns not found for a credit owned by another user" do
+        other_credit = create(:credit)
+
+        get credit_path(other_credit)
+
+        expect(response).to have_http_status(:not_found)
+      end
+
+      it "lists insurance policies for the credit" do
+        credit = create(:credit, user: user)
+        create(:insurance_policy, credit: credit, insurer_name: "Seguros Bolívar")
+
+        get credit_path(credit)
+
+        expect(response.body).to include("Seguros Bolívar")
+      end
+
+      it "marks already-made installments as paid and remaining ones as projected" do
+        credit = create(:credit, user: user, principal_amount: 20_000_000, term_months: 12)
+        create(:payment, credit: credit, payment_type: :installment, payment_date: Date.current, principal_component: 500_000, balance_after: 19_500_000)
+
+        get credit_path(credit)
+
+        expect(response.body.scan("Pagada").size).to eq(1)
+        expect(response.body.scan("Proyectada").size).to eq(11)
+      end
+
+      it "lists the full payment history, including extra principal payments" do
+        credit = create(:credit, user: user)
+        create(:payment, credit: credit, payment_type: :extra_principal, amount: 1_000_000, principal_component: 1_000_000, interest_component: 0, balance_after: 19_000_000)
+
+        get credit_path(credit)
+
+        expect(response.body).to include("Extra principal")
+      end
+    end
+  end
 end

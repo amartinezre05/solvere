@@ -27,11 +27,11 @@
         <% next_installment = schedule.next_installment %>
         <tr>
           <td><%= credit.credit_type.name %></td>
-          <td><%= credit.lender_name %></td>
-          <td><%= number_to_currency(schedule.current_balance, unit: "$", separator: ",", delimiter: ".", precision: 0) %></td>
+          <td><%= link_to credit.lender_name, credit_path(credit) %></td>
+          <td><%= format_cop(schedule.current_balance) %></td>
           <td>
             <% if next_installment %>
-              <%= next_installment.date.strftime("%d/%m/%Y") %> — <%= number_to_currency(next_installment.payment, unit: "$", separator: ",", delimiter: ".", precision: 0) %>
+              <%= next_installment.date.strftime("%d/%m/%Y") %> — <%= format_cop(next_installment.payment) %>
             <% else %>
               Sin cuotas pendientes
             <% end %>

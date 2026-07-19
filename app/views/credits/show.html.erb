@@ -1,0 +1,158 @@
+<% content_for :title, "#{@credit.lender_name} — #{@credit.credit_type.name}" %>
+
+<%= tag.div(flash[:alert], style: "color:red") if flash[:alert] %>
+<%= tag.div(flash[:notice], style: "color:green") if flash[:notice] %>
+
+<header>
+  <span><%= Current.user.email_address %></span>
+  <%= button_to "Cerrar sesión", session_path, method: :delete %>
+</header>
+
+<p><%= link_to "← Mis créditos", credits_path %></p>
+
+<h1><%= @credit.lender_name %> — <%= @credit.credit_type.name %></h1>
+
+<section>
+  <h2>Datos generales</h2>
+  <dl>
+    <dt>Monto</dt>
+    <dd><%= format_cop(@credit.principal_amount) %> (<%= @credit.currency.upcase %>)</dd>
+
+    <dt>Saldo actual</dt>
+    <dd><%= format_cop(@schedule.current_balance) %></dd>
+
+    <dt>Plazo</dt>
+    <dd><%= @credit.term_months %> meses</dd>
+
+    <dt>Tasa</dt>
+    <dd><%= number_to_percentage(@credit.interest_rate_ea, precision: 2) %> E.A. (<%= @credit.interest_rate_type.humanize %>)</dd>
+
+    <dt>Sistema de amortización</dt>
+    <dd><%= @credit.amortization_system.humanize %></dd>
+
+    <dt>Desembolso</dt>
+    <dd><%= @credit.disbursement_date.strftime("%d/%m/%Y") %></dd>
+
+    <dt>Primera cuota</dt>
+    <dd><%= @credit.first_payment_date.strftime("%d/%m/%Y") %></dd>
+
+    <dt>Día de pago</dt>
+    <dd><%= @credit.payment_day %></dd>
+
+    <dt>Estado</dt>
+    <dd><%= @credit.status.humanize %></dd>
+  </dl>
+</section>
+
+<section>
+  <h2>Pólizas de seguro</h2>
+
+  <% if @credit.insurance_policies.any? %>
+    <table>
+      <thead>
+        <tr>
+          <th>Tipo</th>
+          <th>Aseguradora</th>
+          <th>Prima</th>
+          <th>Frecuencia</th>
+          <th>Vigencia</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @credit.insurance_policies.each do |policy| %>
+          <tr>
+            <td><%= policy.policy_type.humanize %></td>
+            <td><%= policy.insurer_name %></td>
+            <td><%= format_cop(policy.premium_amount) %></td>
+            <td><%= policy.premium_frequency.humanize %></td>
+            <td>
+              <%= policy.start_date.strftime("%d/%m/%Y") %> –
+              <%= policy.end_date&.strftime("%d/%m/%Y") || "indefinida" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p>Sin pólizas registradas.</p>
+  <% end %>
+</section>
+
+<section>
+  <h2>Plan de amortización</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Fecha</th>
+        <th>Cuota</th>
+        <th>Interés</th>
+        <th>Capital</th>
+        <th>Saldo</th>
+        <th>Estado</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @paid_installments.each_with_index do |payment, index| %>
+        <tr>
+          <td><%= index + 1 %></td>
+          <td><%= payment.payment_date.strftime("%d/%m/%Y") %></td>
+          <td><%= format_cop(payment.amount) %></td>
+          <td><%= format_cop(payment.interest_component) %></td>
+          <td><%= format_cop(payment.principal_component) %></td>
+          <td><%= format_cop(payment.balance_after) %></td>
+          <td>Pagada</td>
+        </tr>
+      <% end %>
+      <% @upcoming_installments.each do |installment| %>
+        <tr>
+          <td><%= @paid_installments.size + installment.number %></td>
+          <td><%= installment.date.strftime("%d/%m/%Y") %></td>
+          <td><%= format_cop(installment.payment) %></td>
+          <td><%= format_cop(installment.interest) %></td>
+          <td><%= format_cop(installment.principal) %></td>
+          <td><%= format_cop(installment.balance) %></td>
+          <td>Proyectada</td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Histórico de pagos</h2>
+
+  <% if @payments.any? %>
+    <table>
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Tipo</th>
+          <th>Monto</th>
+          <th>Capital</th>
+          <th>Interés</th>
+          <th>Seguro</th>
+          <th>Cuota manejo</th>
+          <th>Saldo después</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @payments.each do |payment| %>
+          <tr>
+            <td><%= payment.payment_date.strftime("%d/%m/%Y") %></td>
+            <td><%= payment.payment_type.humanize %></td>
+            <td><%= format_cop(payment.amount) %></td>
+            <td><%= format_cop(payment.principal_component) %></td>
+            <td><%= format_cop(payment.interest_component) %></td>
+            <td><%= payment.insurance_component ? format_cop(payment.insurance_component) : "—" %></td>
+            <td><%= payment.fees_component ? format_cop(payment.fees_component) : "—" %></td>
+            <td><%= format_cop(payment.balance_after) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p>Todavía no se han registrado pagos.</p>
+  <% end %>
+</section>
